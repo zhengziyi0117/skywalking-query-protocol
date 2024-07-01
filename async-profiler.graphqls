@@ -18,14 +18,14 @@
 input AsyncProfilerTaskCreationRequest {
     # need to monitor service id
     serviceId: ID!
-    # endpoint name to monitored under the special service.
-    endpointName: String!
+    # serviceInstanceId to monitored under the special service.
+    serviceInstanceId: String!
     # duration of this task (second)
     duration: Int!
     # async-profiler data format (html or jfr)
-    format: AsyncProfilerDataFormatType!
+    dataFormat: AsyncProfilerDataFormatType!
     # when the segment starts to execute, how long must it take before the monitor can be enable
-    eventType: [AsyncProfilerEventType!]!
+    events: [AsyncProfilerEventType!]!
     # other async-profiler args example alloc=2k,lock=2s
     execArgs: String
 }
@@ -53,9 +53,9 @@ enum AsyncProfilerDataFormatType {
 }
 
 extend type Mutation {
-    createAsyncProfilerTask(asyncProfilerTaskCreationRequest:AsyncProfilerTaskCreationRequest!): AsyncProfileTaskCreationResult!
+    createAsyncProfilerTask(asyncProfilerTaskCreationRequest: AsyncProfilerTaskCreationRequest!): AsyncProfileTaskCreationResult!
 }
 
 extend type Query {
-    virtualQuery(asyncProfilerTaskCreationRequest:AsyncProfilerTaskCreationRequest!): AsyncProfileTaskCreationResult!
+    virtualQuery(asyncProfilerTaskCreationRequest: AsyncProfilerTaskCreationRequest!): AsyncProfileTaskCreationResult!
 }
