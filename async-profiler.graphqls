@@ -39,12 +39,78 @@ type AsyncProfileTaskCreationResult {
     id: String
 }
 
+# query async profiler task
+input AsyncProfilerTaskRequest {
+    # serviceInstanceId to monitored under the special service.
+    serviceInstanceId: ID!
+    # start time
+    startTime: Long
+    # end time
+    endTime: Long
+    limit: Int
+}
+
+# get profiler task result
+type AsyncProfilerTaskResult {
+    # if null or empty means the task create success, otherwise get create error reason
+    errorReason: String
+
+    # get data id when create success
+    tasks: [AsyncProfilerTask!]
+}
+
+# async profiler task data
+type AsyncProfilerTask {
+    id: String
+    serviceId: String
+    serviceInstanceId: String
+    createTime: Long
+    events: [AsyncProfilerEventType!]!
+    dataFormat: AsyncProfilerDataFormatType
+    duration: Int
+    execArgs: String
+}
+
+type AsyncProfilerStackTree {
+    type: JfrEventType!
+    elements: [AsyncProfilerStackElement!]!
+}
+
+type AsyncProfilerStackElement {
+    id: ID!
+    parentId: ID!
+    codeSignature: String!
+    total: Long!
+    self: Long!
+}
+
+# Profile task create result
+type AsyncProfilerAnalyzation {
+    # if null or empty means the task create success, otherwise get create error reason
+    errorReason: String
+
+    # get frameTree with event
+    trees: [AsyncProfilerStackTree!]!
+}
+
 # async profiler task event type
 enum AsyncProfilerEventType {
     CPU
     WALL
     LOCK
     ALLOC
+    CTIMER
+    ITIMER
+}
+
+enum JfrEventType {
+    UNKNOWN
+    EXECUTION_SAMPLE
+    JAVA_MONITOR_ENTER
+    THREAD_PARK
+    OBJECT_ALLOCATION_IN_NEW_TLAB
+    OBJECT_ALLOCATION_OUTSIDE_TLAB
+    PROFILER_LIVE_OBJECT
 }
 
 enum AsyncProfilerDataFormatType {
@@ -57,5 +123,6 @@ extend type Mutation {
 }
 
 extend type Query {
-    virtualQuery(asyncProfilerTaskCreationRequest: AsyncProfilerTaskCreationRequest!): AsyncProfileTaskCreationResult!
+    queryAsyncProfilerTask(asyncProfilerTaskRequest: AsyncProfilerTaskRequest!): AsyncProfilerTaskResult!
+    queryAsyncProfilerAnalyze(taskId: ID!): AsyncProfilerAnalyzation!
 }
