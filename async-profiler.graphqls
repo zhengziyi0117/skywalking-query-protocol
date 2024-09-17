@@ -19,11 +19,9 @@ input AsyncProfilerTaskCreationRequest {
     # need to monitor service id
     serviceId: ID!
     # serviceInstanceId to monitored under the special service.
-    serviceInstanceId: String!
+    serviceInstanceIds: [String!]
     # duration of this task (second)
     duration: Int!
-    # async-profiler data format (html or jfr)
-    dataFormat: AsyncProfilerDataFormatType!
     # when the segment starts to execute, how long must it take before the monitor can be enable
     events: [AsyncProfilerEventType!]!
     # other async-profiler args example alloc=2k,lock=2s
@@ -31,7 +29,7 @@ input AsyncProfilerTaskCreationRequest {
 }
 
 # Profile task create result
-type AsyncProfileTaskCreationResult {
+type AsyncProfilerTaskCreationResult {
     # if null or empty means the task create success, otherwise get create error reason
     errorReason: String
 
@@ -40,9 +38,9 @@ type AsyncProfileTaskCreationResult {
 }
 
 # query async profiler task
-input AsyncProfilerTaskRequest {
+input AsyncProfilerTaskListRequest {
     # serviceInstanceId to monitored under the special service.
-    serviceInstanceId: ID!
+    serviceId: ID!
     # start time
     startTime: Long
     # end time
@@ -50,23 +48,32 @@ input AsyncProfilerTaskRequest {
     limit: Int
 }
 
+# query analyzation
+input AsyncProfilerAnalyzationRequest {
+    # task id
+    taskId: ID!
+    # if null mean merge all
+    instanceIds: [String]
+    # jfr event type
+    eventType: JfrEventType!
+}
+
 # get profiler task result
-type AsyncProfilerTaskResult {
+type AsyncProfilerTaskListResult {
     # if null or empty means the task create success, otherwise get create error reason
     errorReason: String
 
     # get data id when create success
-    tasks: [AsyncProfilerTask!]
+    tasks: [AsyncProfilerTask]
 }
 
 # async profiler task data
 type AsyncProfilerTask {
     id: String
     serviceId: String
-    serviceInstanceId: String
+    serviceInstanceIds: [String]
     createTime: Long
     events: [AsyncProfilerEventType!]!
-    dataFormat: AsyncProfilerDataFormatType
     duration: Int
     execArgs: String
 }
@@ -90,7 +97,7 @@ type AsyncProfilerAnalyzation {
     errorReason: String
 
     # get frameTree with event
-    trees: [AsyncProfilerStackTree!]!
+    tree: AsyncProfilerStackTree
 }
 
 # async profiler task event type
@@ -113,16 +120,12 @@ enum JfrEventType {
     PROFILER_LIVE_OBJECT
 }
 
-enum AsyncProfilerDataFormatType {
-    JFR
-    HTML
-}
-
 extend type Mutation {
-    createAsyncProfilerTask(asyncProfilerTaskCreationRequest: AsyncProfilerTaskCreationRequest!): AsyncProfileTaskCreationResult!
+    createAsyncProfilerTask(asyncProfilerTaskCreationRequest: AsyncProfilerTaskCreationRequest!): AsyncProfilerTaskCreationResult!
 }
 
 extend type Query {
-    queryAsyncProfilerTask(asyncProfilerTaskRequest: AsyncProfilerTaskRequest!): AsyncProfilerTaskResult!
-    queryAsyncProfilerAnalyze(taskId: ID!): AsyncProfilerAnalyzation!
+    queryAsyncProfilerTaskList(request: AsyncProfilerTaskListRequest!): AsyncProfilerTaskListResult!
+    queryAsyncProfilerTaskLogs(taskId: String): [ProfileTaskLog]!
+    queryAsyncProfilerAnalyze(request: AsyncProfilerAnalyzationRequest!): AsyncProfilerAnalyzation!
 }
