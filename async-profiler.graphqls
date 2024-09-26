@@ -45,6 +45,7 @@ input AsyncProfilerTaskListRequest {
     startTime: Long
     # end time
     endTime: Long
+    # The most recent limit number of tasks
     limit: Int
 }
 
